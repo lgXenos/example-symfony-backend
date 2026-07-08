@@ -1,0 +1,37 @@
+# yaml-language-server: $schema=../vendor/symfony/dependency-injection/Loader/schema/services.schema.json
+
+# This file is the entry point to configure your own services.
+# Files in the packages/ subdirectory configure your dependencies.
+# See also https://symfony.com/doc/current/service_container/import.html
+
+# Put parameters here that don't need to change on each machine where the app is deployed
+# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
+parameters:
+
+services:
+    # default configuration for services in *this* file
+    _defaults:
+        autowire: true      # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+
+    App\:
+        resource: '../src/'
+
+    App\EventListener\AuthTokenListener:
+        arguments:
+            $secretToken: '%env(MICROSERVICE_AUTH_TOKEN)%'
+
+when@test:
+    services:
+        _defaults:
+            public: true
+
+        test.external_post_client:
+            class: Symfony\Component\HttpClient\MockHttpClient
+            arguments:
+                - []
+
+        App\Service\Integration\V1\JsonPlaceholderFetcher:
+            arguments:
+                $typicodeClient: '@test.external_post_client'
+            tags: ['App\Service\Integration\PostFetcherInterface']

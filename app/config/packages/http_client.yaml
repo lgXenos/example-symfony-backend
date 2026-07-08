@@ -1,0 +1,6 @@
+framework:
+    http_client:
+        scoped_clients:
+            typicode.client:
+                base_uri: '%env(TYPICODE_BASE_URL)%'
+                timeout: 5.0
