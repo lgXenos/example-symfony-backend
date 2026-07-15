@@ -9,7 +9,6 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 /**
  * Маркерный интерфейс входных параметров при логине
  */
-#[AutoconfigureTag]
 interface AuthInputInterface
 {
 }

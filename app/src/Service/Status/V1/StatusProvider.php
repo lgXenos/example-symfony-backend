@@ -13,9 +13,6 @@ use App\Service\Status\V1\DTO\StatusDataV1;
  */
 final class StatusProvider implements StatusProviderInterface
 {
-    /**
-     * @innerhit
-     */
     public function getVersion(): int
     {
         return 1;
