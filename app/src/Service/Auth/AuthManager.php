@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service\Auth;
 
-use InvalidArgumentException;
+use App\Service\Support\VersionedRegistry;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 /**
@@ -13,10 +13,8 @@ use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
  */
 final class AuthManager
 {
-    /**
-     * @var array<int, AuthenticatorInterface>
-     */
-    private readonly array $authenticators;
+    /** @var VersionedRegistry<AuthenticatorInterface> */
+    private readonly VersionedRegistry $registry;
 
     /**
      * @param iterable<AuthenticatorInterface> $authenticators
@@ -24,11 +22,7 @@ final class AuthManager
     public function __construct(
         #[AutowireIterator(AuthenticatorInterface::class)] iterable $authenticators
     ) {
-        $authenticatorsMap = [];
-        foreach ($authenticators as $authenticator) {
-            $authenticatorsMap[$authenticator->getVersion()] = $authenticator;
-        }
-        $this->authenticators = $authenticatorsMap;
+        $this->registry = new VersionedRegistry($authenticators, 'Authenticator');
     }
 
     /**
@@ -37,14 +31,10 @@ final class AuthManager
      * @param int $version
      * @return AuthenticatorInterface
      *
-     * @throws InvalidArgumentException
+     * @throws \InvalidArgumentException
      */
     public function getAuthenticatorForVersion(int $version): AuthenticatorInterface
     {
-        if (!isset($this->authenticators[$version])) {
-            throw new InvalidArgumentException(sprintf('Authenticator for API v%d is not registered.', $version));
-        }
-
-        return $this->authenticators[$version];
+        return $this->registry->get($version);
     }
 }

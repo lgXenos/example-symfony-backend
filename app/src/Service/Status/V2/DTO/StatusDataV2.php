@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Service\Status\V2\DTO;
 
+use App\Contract\ArrayableInterface;
+
 /**
  * Class StatusDataV2
  * DTO для метаданных версии API v2.
  */
-final class StatusDataV2
+final class StatusDataV2 implements ArrayableInterface
 {
     /**
      * @param array<string, string> $engine Данные о движке

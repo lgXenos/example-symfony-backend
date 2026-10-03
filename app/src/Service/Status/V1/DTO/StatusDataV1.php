@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Service\Status\V1\DTO;
 
+use App\Contract\ArrayableInterface;
+
 /**
  * Class StatusDataV1
  * DTO для метаданных версии API v1.
  */
-final class StatusDataV1
+final class StatusDataV1 implements ArrayableInterface
 {
     /**
      * @param string $framework Название фреймворка

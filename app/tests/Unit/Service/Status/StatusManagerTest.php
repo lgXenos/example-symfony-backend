@@ -59,7 +59,7 @@ final class StatusManagerTest extends TestCase
 
         // Ожидаем исключение InvalidArgumentException
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Status provider for version API v999999 is not registered.');
+        $this->expectExceptionMessage('Status provider for API v999999 is not registered.');
 
         // Вызываем код, который должен стриггерить исключение
         $manager->getStatusForVersion(999999);

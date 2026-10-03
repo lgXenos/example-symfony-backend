@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service\Status;
 
-use InvalidArgumentException;
+use App\Service\Support\VersionedRegistry;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 /**
@@ -13,10 +13,8 @@ use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
  */
 final class StatusManager
 {
-    /**
-     * @var array<int, StatusProviderInterface> Пул провайдеров, индексированный версиями.
-     */
-    private readonly array $providers;
+    /** @var VersionedRegistry<StatusProviderInterface> */
+    private readonly VersionedRegistry $registry;
 
     /**
      * @param iterable<StatusProviderInterface> $providers Коллекция всех провайдеров из DI-контейнера.
@@ -24,12 +22,7 @@ final class StatusManager
     public function __construct(
         #[AutowireIterator(StatusProviderInterface::class)] iterable $providers
     ) {
-        // Заполняем карту провайдеров для поиска по ключу версии
-        $providerMap = [];
-        foreach ($providers as $provider) {
-            $providerMap[$provider->getVersion()] = $provider;
-        }
-        $this->providers = $providerMap;
+        $this->registry = new VersionedRegistry($providers, 'Status provider');
     }
 
     /**
@@ -38,23 +31,11 @@ final class StatusManager
      * @param int $version Номер запрашиваемой версии.
      * @return array<string, mixed>
      *
-     * @throws InvalidArgumentException Если провайдер для указанной версии не зарегистрирован.
+     * @throws \InvalidArgumentException Если провайдер для указанной версии не зарегистрирован.
      */
     public function getStatusForVersion(int $version): array
     {
-        if (!isset($this->providers[$version])) {
-            throw new InvalidArgumentException(
-                sprintf('Status provider for version API v%d is not registered.', $version)
-            );
-        }
-
-        $data = $this->providers[$version]->getData();
-
-        // Если провайдер возвращает DTO с методом toArray(), конвертируем в массив
-        if (is_object($data) && method_exists($data, 'toArray')) {
-            return $data->toArray();
-        }
-
-        throw new InvalidArgumentException('Status provider not implement method "toArray"');
+        // Контракт StatusProviderInterface гарантирует наличие toArray() у DTO
+        return $this->registry->get($version)->getData()->toArray();
     }
 }

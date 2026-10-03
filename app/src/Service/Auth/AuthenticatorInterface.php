@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service\Auth;
 
+use App\Contract\VersionedInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
@@ -11,15 +12,8 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
  * Используется для динамической регистрации версий в DI-контейнере.
  */
 #[AutoconfigureTag]
-interface AuthenticatorInterface
+interface AuthenticatorInterface extends VersionedInterface
 {
-    /**
-     * Возвращает версию API, которую поддерживает данный сервис.
-     *
-     * @return int
-     */
-    public function getVersion(): int;
-
     /**
      * Авторизация по входным параметрам
      *

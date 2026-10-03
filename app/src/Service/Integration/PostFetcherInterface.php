@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service\Integration;
 
+use App\Contract\VersionedInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
@@ -11,13 +12,8 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
  * Контракт для получения публикаций из внешних источников с поддержкой версионирования.
  */
 #[AutoconfigureTag]
-interface PostFetcherInterface
+interface PostFetcherInterface extends VersionedInterface
 {
-    /**
-     * Возвращает версию API, которую обслуживает данный фетчер.
-     */
-    public function getVersion(): int;
-
     /**
      * Получает список постов из внешнего API.
      *
