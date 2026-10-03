@@ -18,12 +18,15 @@ final class AuthTokenListener
     public const HEADER_NAME = 'X-Microservice-Token';
 
     /**
-     * Конструктор принимает токен, проброшенный из конфигурации app/config/services.yaml
+     * Конструктор принимает токен и список публичных роутов из app/config/services.yaml.
      *
-     * @param string $secretToken
+     * @param string   $secretToken
+     * @param string[] $publicRoutes Явный белый список роутов, не требующих токена.
      */
-    public function __construct(private readonly string $secretToken)
-    {
+    public function __construct(
+        private readonly string $secretToken,
+        private readonly array $publicRoutes = []
+    ) {
     }
 
     /**
@@ -49,11 +52,11 @@ final class AuthTokenListener
         // Получаем имя текущего роута из атрибутов запроса Symfony
         $currentRoute = $request->attributes->get('_route');
 
-        // Если роут не определен (например, 404 ошибка), или это логин - пропускаем
+        // Если роут не определен (например, 404 ошибка) или он в белом списке публичных - пропускаем
         if (
             !is_string($currentRoute)
             ||
-            preg_match('#^api_v[\d]+_auth_login$#', $currentRoute) === 1
+            in_array($currentRoute, $this->publicRoutes, true)
         ) {
             return;
         }
@@ -65,15 +68,16 @@ final class AuthTokenListener
 
     /**
      * Инкапсулирует внутреннюю логику валидации API-токена.
+     * Сравнение через hash_equals - защита от timing-атак.
      *
      * @param string $token Токен, полученный из заголовков запроса.
      * @return void
      *
      * @throws AccessDeniedHttpException Если переданный токен не совпадает с эталонным.
      */
-    protected function validateToken(string $token): void
+    private function validateToken(string $token): void
     {
-        if ($token !== $this->secretToken) {
+        if (!hash_equals($this->secretToken, $token)) {
             throw new AccessDeniedHttpException('Invalid or missing auth token.');
         }
     }

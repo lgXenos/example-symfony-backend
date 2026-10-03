@@ -69,7 +69,7 @@ class AuthTokenListenerTest extends TestCase
      */
     public function testOnKernelRequestSkipsWhitelistedRoute(): void
     {
-        $listener = new AuthTokenListener(self::TEST_SECRET);
+        $listener = new AuthTokenListener(self::TEST_SECRET, ['api_v1_auth_login']);
 
         $request = new Request();
         // Эмулируем, что запрос пришел на эндпоинт логина

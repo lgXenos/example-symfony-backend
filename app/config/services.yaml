@@ -20,6 +20,9 @@ services:
     App\EventListener\AuthTokenListener:
         arguments:
             $secretToken: '%env(MICROSERVICE_AUTH_TOKEN)%'
+            # Явный белый список роутов, доступных без X-Microservice-Token
+            $publicRoutes:
+                - 'api_v1_auth_login'
 
 when@test:
     services:

@@ -110,6 +110,12 @@ docker compose exec php composer cc -d app
   
 ---
 
+# TODO / идеи для развития
+
+* **Rate limiter на `/api/v1/login`.** Эндпоинт логина сейчас публичный (в белом списке `AuthTokenListener`) и не защищен от брутфорса. В Symfony есть готовый компонент: `symfony/rate-limiter` + `symfony/lock` (хранилище лимита, например, в Redis). Идея: лимитер на IP (например, 5 попыток / минута) с `429 Too Many Requests` при превышении, вешается прямо в `AuthController::login` через `RateLimiterFactory`.
+
+---
+
 # Permissions!
 
 ## Управление правами и вход в контейнер

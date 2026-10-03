@@ -36,7 +36,11 @@ final class EnvAuthenticator implements AuthenticatorInterface
     public function authenticate(AuthInputInterface $input): string
     {
         if ($input instanceof LoginInput) {
-            if ($input->login !== $this->expectedLogin || $input->password !== $this->expectedPassword) {
+            // Сравнение через hash_equals - защита от timing-атак
+            $loginMatch = hash_equals($this->expectedLogin, $input->login);
+            $passwordMatch = hash_equals($this->expectedPassword, $input->password);
+
+            if ($loginMatch === false || $passwordMatch === false) {
                 throw new UserFriendlyException('Invalid login or password.');
             }
         } else {
