@@ -3,4 +3,14 @@ framework:
         scoped_clients:
             typicode.client:
                 base_uri: '%env(TYPICODE_BASE_URL)%'
-                timeout: 5.0
+                # Базовое значение (используется в prod): даем внешнему API достаточно времени
+                timeout: 60.0
+
+# В dev зависимость должна падать быстро, а не подвешивать запрос на минуту.
+# 0 использовать не стоит: в Symfony timeout=0 полностью отключает лимит.
+when@dev:
+    framework:
+        http_client:
+            scoped_clients:
+                typicode.client:
+                    timeout: 1.0

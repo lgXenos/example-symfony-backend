@@ -7,6 +7,7 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    # pass
 
 services:
     # default configuration for services in *this* file
@@ -34,7 +35,13 @@ when@test:
             arguments:
                 - []
 
+        # Кэш-заглушка: тесты не должны зависеть от состояния файлового пула
+        # и обязаны каждый раз проходить через мок HTTP-клиента
+        test.null_cache:
+            class: Symfony\Component\Cache\Adapter\NullAdapter
+
         App\Service\Integration\V1\JsonPlaceholderFetcher:
             arguments:
                 $typicodeClient: '@test.external_post_client'
+                $cache: '@test.null_cache'
             tags: ['App\Service\Integration\PostFetcherInterface']
