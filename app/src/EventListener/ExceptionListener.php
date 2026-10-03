@@ -57,10 +57,20 @@ final class ExceptionListener
             foreach ($validationException->getViolations() as $violation) {
                 $validationErrors[$violation->getPropertyPath()] = $violation->getMessage();
             }
-        } // 2. Контролируемая HTTP-ошибка (404, 401, 403)
+        } // 2. Контролируемая HTTP-ошибка (404, 401, 403, 502)
         elseif ($exception instanceof HttpExceptionInterface) {
             $statusCode = $exception->getStatusCode();
-            $message = $exception->getMessage();
+
+            // Сообщение отдаем клиенту только для "клиентских" кодов (< 500)
+            // и для наших собственных исключений - их текст заведомо безопасен.
+            // Иначе (например, HttpException с 500 и внутренними деталями) - generic.
+            if ($statusCode < 500 || $this->isOwnException($exception)) {
+                $message = $exception->getMessage();
+            } else {
+                $this->logger->error('Server error: ' . $exception->getMessage(), [
+                    'exception' => $exception,
+                ]);
+            }
         } // 3. Непредвиденный критический сбой (ошибка в коде, Fatal Error)
         else {
             $this->logger->error('CRITICAL BUG: ' . $exception->getMessage(), [
@@ -96,5 +106,15 @@ final class ExceptionListener
         }
 
         $event->setResponse(new JsonResponse($errorResponse, $statusCode));
+    }
+
+    /**
+     * Наши собственные исключения (UserFriendlyException, BadGatewayHttpException)
+     * создаются осознанно и их сообщения безопасны для отдачи клиенту.
+     */
+    private function isOwnException(\Throwable $exception): bool
+    {
+        return $exception instanceof \App\Exception\UserFriendlyException
+            || $exception instanceof \App\Exception\BadGatewayHttpException;
     }
 }
